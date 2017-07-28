@@ -45,6 +45,11 @@
                   ul.append( "<li class='ui-autocomplete-category'>" + key + "</li>" );
 
                   $.each( items, function( index, item ) {
+
+                      if (item.type == "heading") {
+                          item.label = item.headingName + " (In section: "+ item.value +")";
+
+                      }
                       if (key == item.category) {
                         var li;
                         li = that._renderItemData( ul, item );
@@ -54,6 +59,15 @@
                       }
                   });
               }
+              $.each( items, function( index, item ) {
+                  if (item.category == "") {
+                      var li;
+                      li = that._renderItemData( ul, item );
+                      if ( item.category ) {
+                          li.attr( "aria-label", item.category + " : " + item.value );
+                      }
+                  }
+              });
 
           }
       });
@@ -62,6 +76,7 @@
       $( "#search" ).catcomplete({
           source: "${url.base}${currentNode.path}.search.html.ajax",
           delay: 50,
+          minLength: 3,
           select: function( event, ui ) {
               window.location.href = ui.item.url;
               return false;

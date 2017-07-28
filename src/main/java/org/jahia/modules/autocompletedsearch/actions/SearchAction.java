@@ -33,26 +33,20 @@ import java.util.stream.Collectors;
  */
 public class SearchAction extends AbstractFilter {
 
-    public CacheService getCacheService() {
-        return cacheService;
-    }
-
-    public void setCacheService(CacheService cacheService) {
-        this.cacheService = cacheService;
-    }
 
     protected CacheService cacheService;
+    protected String nodetype;
+    protected String propertyName;
 
     @Override
     public String prepare(RenderContext renderContext, Resource resource, RenderChain chain) throws Exception {
 
 
-        Cache<String, String> autoCompleteSearchCache = AutoCompleteSearchCacheUtils.initCache(resource.getNode().getSession(), cacheService, resource.getNode().getResolveSite().getSiteKey());
+        Cache<String, String> autoCompleteSearchCache = AutoCompleteSearchCacheUtils.initCache(resource.getNode().getSession(), cacheService, resource.getNode().getResolveSite().getSiteKey(), nodetype, propertyName);
 
         List<String> result = autoCompleteSearchCache.getKeys().stream()
                 .filter(item -> item.contains(renderContext.getRequest().getParameter("term").toLowerCase()))
                 .collect(Collectors.toList());
-        System.out.println("results" + result);
 
         JSONArray json = new JSONArray();
 
@@ -61,13 +55,33 @@ public class SearchAction extends AbstractFilter {
            String jsonString = (String) autoCompleteSearchCache.get(result.get(i));
            JSONObject jsonObject = new JSONObject(jsonString);
            jsonObject.put("value", jsonObject.get("title"));
-           jsonObject.put("path", jsonObject.get("path"));
-           jsonObject.put("url", jsonObject.get("url"));
-           jsonObject.put("category", jsonObject.get("category"));
            json.put(jsonObject);
         }
 
         renderContext.getRequest().getSession().setAttribute("jsonArray", json.toString());
         return null;
+    }
+    public CacheService getCacheService() {
+        return cacheService;
+    }
+
+    public void setCacheService(CacheService cacheService) {
+        this.cacheService = cacheService;
+    }
+
+    public String getNodetype() {
+        return nodetype;
+    }
+
+    public void setNodetype(String nodetype) {
+        this.nodetype = nodetype;
+    }
+
+    public String getPropertyName() {
+        return propertyName;
+    }
+
+    public void setPropertyName(String propertyName) {
+        this.propertyName = propertyName;
     }
 }

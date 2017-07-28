@@ -7,5 +7,9 @@
         <property name="applyOnNodeTypes" value="jnt:autocompleted_search"/>
         <property name="applyOnTemplates" value="search"/>
         <property name="cacheService" ref="JahiaCacheService"/>
+        <property name="nodetype" value="jacademy:document"/>
+        <property name="propertyName" value="textContent"/>
+        <!--<property name="nodetype" value="jnt:news"/>-->
+        <!--<property name="propertyName" value="desc"/>-->
     </bean>
 </beans>
