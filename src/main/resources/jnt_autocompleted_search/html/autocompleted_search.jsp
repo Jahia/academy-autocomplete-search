@@ -19,11 +19,32 @@
 <%--@elvariable id="url" type="org.jahia.services.render.URLGenerator"--%>
 
 <template:addResources type="css" resources="jquery-ui.min.css, jquery-ui.structure.min.css, jquery-ui.theme.min.css, autoCompleteSearch.css" />
-<template:addResources type="javascript" resources="jquery-ui.min.js" /> 
+<template:addResources type="javascript" resources="jquery-ui.min.js" />
+<jcr:node var="searchPage" path="/sites/academy/home/search"/>
+<c:choose>
+    <c:when test="${empty searchPage}">
+      <form>
+        <div class="search">
+          <input type="text" id="search" style="width:100%;"/>
+        </div>
+      </form>
+    </c:when>
+    <c:otherwise>
+      <c:url var="searchPageUrl" value="${searchPage.url}"/>
+      <s:form method="post" action="${searchPageUrl}">
+        <s:site value="${renderContext.site.name}" includeReferencesFrom="systemsite" display="false"/>
+        <s:language value="${renderContext.mainResource.locale}" display="false"/>
+        <%--<input type="text" id="search" style="width:100%;"/>--%>
+        <div class="search">
+          <s:term match="all_words" id="search" placeholder="Type any terms" searchIn="siteContent,tags" style="width:80%;"/>
+          <button type="submit" class="btn btn-primary"><fmt:message key='search.submit'/></button>
+        </div>
 
-<form>
-  <input type="text" id="search" style="width:100%;"/>
-</form>
+
+      </s:form>
+
+    </c:otherwise>
+</c:choose>
 
 
 <script>
