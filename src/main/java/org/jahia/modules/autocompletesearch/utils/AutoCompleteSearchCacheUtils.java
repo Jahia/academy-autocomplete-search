@@ -28,23 +28,26 @@ public class AutoCompleteSearchCacheUtils {
 
     private static Logger logger = LoggerFactory.getLogger(AutoCompleteSearchCacheUtils.class);
 
-    public AutoCompleteSearchCacheUtils() {}
+    public AutoCompleteSearchCacheUtils() {
+    }
+
     private static JSONObject extractProperties(JCRNodeWrapper node) throws JSONException {
 
         JSONObject jsonObject = new JSONObject();
 
-        jsonObject.put("title", node.getPropertyAsString("jcr:title"));
+        String title = node.getDisplayableName();
+        jsonObject.put("title", title);
         jsonObject.put("path", node.getPath());
         jsonObject.put("url", JCRContentUtils.getParentOfType(node, "jnt:page").getUrl());
         JCRNodeWrapper category = JCRContentUtils.getParentOfType(node, "jmix:autoCompletedSearchCategory");
         if (category == null) {
             jsonObject.put("category", "");
         } else {
-            jsonObject.put("category", category.getPropertyAsString("jcr:title"));
-
+            jsonObject.put("category", category.getDisplayableName());
         }
         return jsonObject;
     }
+
     public static Cache<String, String> initCache(JCRSessionWrapper session, CacheService cacheService, String siteKey, String nodetype, String propertyName) {
         Cache<String, String> autoCompleteSearchCache = null;
         try {
@@ -55,15 +58,14 @@ public class AutoCompleteSearchCacheUtils {
         }
 
 
-
         if (autoCompleteSearchCache.isEmpty()) {
 
-                QueryManager queryManager= session.getWorkspace().getQueryManager();
+            QueryManager queryManager = session.getWorkspace().getQueryManager();
             Query query = null;
             try {
-                query = queryManager.createQuery("SELECT * FROM ["+nodetype+"] as news WHERE ISDESCENDANTNODE('/sites/"+siteKey+"')", Query.JCR_SQL2);
+                query = queryManager.createQuery("SELECT * FROM [" + nodetype + "] as news WHERE ISDESCENDANTNODE('/sites/" + siteKey + "')", Query.JCR_SQL2);
 
-            QueryResultWrapper queryResult = (QueryResultWrapper) query.execute();
+                QueryResultWrapper queryResult = (QueryResultWrapper) query.execute();
                 JCRNodeIteratorWrapper nodes = queryResult.getNodes();
 
 
@@ -75,7 +77,11 @@ public class AutoCompleteSearchCacheUtils {
 
                     try {
                         jsonObject = extractProperties(node);
-                        autoCompleteSearchCache.put(node.getPropertyAsString("jcr:title").toLowerCase(), jsonObject.toString());
+                        String title = node.getPropertyAsString("jcr:title");
+                        if (title != null) {
+                            autoCompleteSearchCache.put(title.toLowerCase(), jsonObject.toString());
+                        }
+
 
                     } catch (JSONException e) { //FIXME
                         e.printStackTrace();
@@ -90,7 +96,13 @@ public class AutoCompleteSearchCacheUtils {
                                 AutoCompleteSearchCacheUtils.logger.info("h:" + m.group(1));
                                 JSONObject jsonSubTitleObject = extractProperties(node);
                                 jsonSubTitleObject.put("type", "heading");
-                                jsonSubTitleObject.put("headingName", m.group(1).toLowerCase());
+                                String headingName = m.group(1).replaceAll("\\<[^>]*>", "");
+                                //jsonSubTitleObject.put("headingName", m.group(1).toLowerCase());
+                                jsonSubTitleObject.put("headingName", headingName);
+                                String fragment = headingName.replaceAll("[^A-Za-z0-9]+", "_").replaceAll("\\s+", "_").replaceAll("^[^A-Za-z]*", "");
+                                String url = (String) jsonSubTitleObject.get("url");
+                                jsonSubTitleObject.put("url", url + "#" + fragment);
+
                                 autoCompleteSearchCache.put(m.group(1).toLowerCase(), jsonSubTitleObject.toString());
                             }
                         } catch (JSONException e) { //FIXME
