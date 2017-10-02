@@ -59,11 +59,15 @@ public class AutoCompleteSearchCacheUtils {
 
 
         if (autoCompleteSearchCache.isEmpty()) {
+            String[] nodetypes = nodetype.split(" ");
 
             QueryManager queryManager = session.getWorkspace().getQueryManager();
             Query query = null;
             try {
-                query = queryManager.createQuery("SELECT * FROM [" + nodetype + "] as news WHERE ISDESCENDANTNODE('/sites/" + siteKey + "')", Query.JCR_SQL2);
+                //query = queryManager.createQuery("SELECT * FROM [" + nodetype + "] as news WHERE ISDESCENDANTNODE('/sites/" + siteKey + "')", Query.JCR_SQL2);
+                String statement = "/jcr:root//element(*,jacademix:isVersionPage)[@version='current']//element(*,jacademix:textContent)";
+                logger.debug("statement is : " + statement);
+                query = queryManager.createQuery(statement, Query.XPATH);
 
                 QueryResultWrapper queryResult = (QueryResultWrapper) query.execute();
                 JCRNodeIteratorWrapper nodes = queryResult.getNodes();
@@ -77,7 +81,7 @@ public class AutoCompleteSearchCacheUtils {
 
                     try {
                         jsonObject = extractProperties(node);
-                        String title = node.getPropertyAsString("jcr:title");
+                        String title = node.getDisplayableName();
                         if (title != null) {
                             autoCompleteSearchCache.put(title.toLowerCase(), jsonObject.toString());
                         }
@@ -98,7 +102,7 @@ public class AutoCompleteSearchCacheUtils {
                                 jsonSubTitleObject.put("type", "heading");
                                 String headingName = m.group(1).replaceAll("\\<[^>]*>", "");
                                 //jsonSubTitleObject.put("headingName", m.group(1).toLowerCase());
-                                jsonSubTitleObject.put("headingName", headingName);
+                                jsonSubTitleObject.put("headingName", headingName.replaceAll("^[^A-Za-z]*", ""));
                                 String fragment = headingName.replaceAll("[^A-Za-z0-9]+", "_").replaceAll("\\s+", "_").replaceAll("^[^A-Za-z]*", "");
                                 String url = (String) jsonSubTitleObject.get("url");
                                 jsonSubTitleObject.put("url", url + "#" + fragment);

@@ -68,7 +68,7 @@
                   $.each( items, function( index, item ) {
 
                       if (item.type == "heading") {
-                          item.label = item.headingName + " (In section: "+ item.value +")";
+                          item.label = item.value +" / " + item.headingName;
 
                       }
                       if (key == item.category) {
