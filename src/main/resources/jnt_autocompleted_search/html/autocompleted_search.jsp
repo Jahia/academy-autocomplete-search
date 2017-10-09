@@ -37,7 +37,7 @@
         <%--<input type="text" id="search" style="width:100%;"/>--%>
         <div class="search">
           <s:term match="all_words" id="search" placeholder="Type any terms" searchIn="siteContent,tags" style="width:80%;"/>
-          <button type="submit" class="btn btn-primary"><fmt:message key='search.submit'/></button>
+          <button type="submit" class="btn btn-primary hidden-xs"><fmt:message key='search.submit'/></button>
         </div>
 
 

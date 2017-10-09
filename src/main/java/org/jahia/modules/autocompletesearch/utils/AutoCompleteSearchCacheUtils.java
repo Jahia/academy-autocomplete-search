@@ -1,12 +1,10 @@
 package org.jahia.modules.autocompletesearch.utils;
 
+import org.jahia.api.Constants;
 import org.jahia.exceptions.JahiaInitializationException;
 import org.jahia.services.cache.Cache;
 import org.jahia.services.cache.CacheService;
-import org.jahia.services.content.JCRContentUtils;
-import org.jahia.services.content.JCRNodeIteratorWrapper;
-import org.jahia.services.content.JCRNodeWrapper;
-import org.jahia.services.content.JCRSessionWrapper;
+import org.jahia.services.content.*;
 import org.jahia.services.query.QueryResultWrapper;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,6 +16,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import java.security.AuthProvider;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,8 +33,17 @@ public class AutoCompleteSearchCacheUtils {
     private static JSONObject extractProperties(JCRNodeWrapper node) throws JSONException {
 
         JSONObject jsonObject = new JSONObject();
-
-        String title = node.getDisplayableName();
+        String title = "";
+        try {
+            if (node.hasProperty("jcr:title")) {
+                title = node.getPropertyAsString("jcr:title");
+            }
+        } catch (javax.jcr.RepositoryException e) {
+            logger.warn("Could not get title for node " + node.getPath() + " " + e.getMessage());
+        }
+        if ("".equals(title)) {
+            title = JCRContentUtils.getParentOfType(node, "jnt:page").getDisplayableName();
+        }
         jsonObject.put("title", title);
         jsonObject.put("path", node.getPath());
         jsonObject.put("url", JCRContentUtils.getParentOfType(node, "jnt:page").getUrl());
@@ -62,11 +70,15 @@ public class AutoCompleteSearchCacheUtils {
             String[] nodetypes = nodetype.split(" ");
 
             QueryManager queryManager = session.getWorkspace().getQueryManager();
+
+
             Query query = null;
+
             try {
                 //query = queryManager.createQuery("SELECT * FROM [" + nodetype + "] as news WHERE ISDESCENDANTNODE('/sites/" + siteKey + "')", Query.JCR_SQL2);
-                String statement = "/jcr:root//element(*,jacademix:isVersionPage)[@version='current']//element(*,jacademix:textContent)";
+                String statement = "/jcr:root//element(*,jacademix:isVersionPage)[@version='current']//element(*,jacademy:document)";
                 logger.debug("statement is : " + statement);
+
                 query = queryManager.createQuery(statement, Query.XPATH);
 
                 QueryResultWrapper queryResult = (QueryResultWrapper) query.execute();
@@ -81,7 +93,20 @@ public class AutoCompleteSearchCacheUtils {
 
                     try {
                         jsonObject = extractProperties(node);
-                        String title = node.getDisplayableName();
+
+                        String title = "";
+                        try {
+                            if (node.hasProperty("jcr:title")) {
+                                title = node.getPropertyAsString("jcr:title");
+                            }
+                        } catch (javax.jcr.RepositoryException e) {
+                            logger.warn("Could not get title for node " + node.getPath() + " " + e.getMessage());
+                        }
+
+                        if ("".equals(title)) {
+                            title = JCRContentUtils.getParentOfType(node, "jnt:page").getDisplayableName();
+                        }
+
                         if (title != null) {
                             autoCompleteSearchCache.put(title.toLowerCase(), jsonObject.toString());
                         }
@@ -97,7 +122,7 @@ public class AutoCompleteSearchCacheUtils {
                         try {
 
                             while (m.find()) {
-                                AutoCompleteSearchCacheUtils.logger.info("h:" + m.group(1));
+                                AutoCompleteSearchCacheUtils.logger.debug("h:" + m.group(1));
                                 JSONObject jsonSubTitleObject = extractProperties(node);
                                 jsonSubTitleObject.put("type", "heading");
                                 String headingName = m.group(1).replaceAll("\\<[^>]*>", "");
