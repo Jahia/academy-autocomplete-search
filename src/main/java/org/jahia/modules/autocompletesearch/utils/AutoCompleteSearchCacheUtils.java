@@ -11,7 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.apache.commons.lang.StringEscapeUtils;
 import javax.jcr.RepositoryException;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
@@ -44,6 +44,8 @@ public class AutoCompleteSearchCacheUtils {
         if ("".equals(title)) {
             title = JCRContentUtils.getParentOfType(node, "jnt:page").getDisplayableName();
         }
+        title = StringEscapeUtils.unescapeHtml(title);
+
         jsonObject.put("title", title);
         jsonObject.put("path", node.getPath());
         jsonObject.put("url", JCRContentUtils.getParentOfType(node, "jnt:page").getUrl());
@@ -108,6 +110,7 @@ public class AutoCompleteSearchCacheUtils {
                         }
 
                         if (title != null) {
+                            title = StringEscapeUtils.unescapeHtml(title);
                             autoCompleteSearchCache.put(title.toLowerCase(), jsonObject.toString());
                         }
 
@@ -127,6 +130,7 @@ public class AutoCompleteSearchCacheUtils {
                                 jsonSubTitleObject.put("type", "heading");
                                 String headingName = m.group(1).replaceAll("\\<[^>]*>", "");
                                 //jsonSubTitleObject.put("headingName", m.group(1).toLowerCase());
+                                headingName = StringEscapeUtils.unescapeHtml(headingName);
                                 jsonSubTitleObject.put("headingName", headingName.replaceAll("^[^A-Za-z]*", ""));
                                 String fragment = headingName.replaceAll("[^A-Za-z0-9]+", "_").replaceAll("\\s+", "_").replaceAll("^[^A-Za-z]*", "");
                                 String url = (String) jsonSubTitleObject.get("url");
