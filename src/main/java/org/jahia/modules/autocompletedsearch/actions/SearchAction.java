@@ -84,4 +84,5 @@ public class SearchAction extends AbstractFilter {
     public void setPropertyName(String propertyName) {
         this.propertyName = propertyName;
     }
+
 }
