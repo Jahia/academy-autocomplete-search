@@ -1,8 +1,0 @@
-<jnt = 'http://www.jahia.org/jahia/nt/1.0'>
-<jmix = 'http://www.jahia.org/jahia/mix/1.0'>
-
-[jmix:autoCompletedSearchCategory] mixin extends=jnt:page
- - isAutoCompletedSearchCategory (string) = 'This page will appear as a category in the seach.' protected
-
-[jnt:autocompleted_search] > jmix:structuredContent, jnt:content
-
