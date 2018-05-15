@@ -48,7 +48,13 @@ public class AutoCompleteSearchCacheUtils {
 
         jsonObject.put("title", title);
         jsonObject.put("path", node.getPath());
-        jsonObject.put("url", JCRContentUtils.getParentOfType(node, "jnt:page").getUrl());
+        JCRNodeWrapper parentPage = JCRContentUtils.getParentOfType(node, "jnt:page");
+        if (parentPage != null) {
+            jsonObject.put("url", parentPage.getUrl());
+        } else {
+            logger.error("Could not get parent page for node [" + node.getPath() + "]");
+        }
+
         JCRNodeWrapper category = JCRContentUtils.getParentOfType(node, "jmix:autoCompletedSearchCategory");
         if (category == null) {
             jsonObject.put("category", "");
