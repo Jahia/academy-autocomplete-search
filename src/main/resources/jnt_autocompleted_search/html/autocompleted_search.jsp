@@ -34,7 +34,7 @@
       <s:form method="post" action="${searchPageUrl}">
         <s:site value="${renderContext.site.name}" includeReferencesFrom="systemsite" display="false"/>
         <s:language value="${renderContext.mainResource.locale}" display="false"/>
-          <s:nodeType display="false" value="jacademy:boost"/>
+          <%--<s:nodeType display="false" value="jacademy:boost"/>--%>
           <%--<input type="text" id="search" style="width:100%;"/>--%>
         <div class="search">
           <s:term match="all_words" id="search" placeholder="Type any terms" searchIn="siteContent,tags" style="width:80%;"/>
